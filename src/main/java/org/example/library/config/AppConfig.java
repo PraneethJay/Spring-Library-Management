@@ -1,7 +1,9 @@
 package org.example.library.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.orm.jpa.JpaTransactionManager;
@@ -13,19 +15,40 @@ import jakarta.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
+import java.util.Properties;
+
 @Configuration
 @ComponentScan(basePackages = "org.example.library")
 @EnableJpaRepositories(basePackages = "org.example.library.repository")
 @EnableTransactionManagement
+@PropertySource("classpath:application.properties")
 public class AppConfig {
+
+    @Value("${spring.datasource.driver-class-name}")
+    private String driverClassName;
+
+    @Value("${spring.datasource.url}")
+    private String url;
+
+    @Value("${spring.datasource.username}")
+    private String username;
+
+    @Value("${spring.datasource.password}")
+    private String password;
+
+    @Value("${spring.jpa.properties.hibernate.dialect}")
+    private String hibernateDialect;
+
+    @Value("${spring.jpa.hibernate.ddl-auto}")
+    private String hbm2ddlAuto;
 
     @Bean
     public DataSource dataSource() {
         DriverManagerDataSource ds = new DriverManagerDataSource();
-        ds.setDriverClassName("org.postgresql.Driver");
-        ds.setUrl("jdbc:postgresql://localhost:5432/librarydb");
-        ds.setUsername("postgres");
-        ds.setPassword("praneeth");
+        ds.setDriverClassName(driverClassName);
+        ds.setUrl(url);
+        ds.setUsername(username);
+        ds.setPassword(password);
         return ds;
     }
 
@@ -36,10 +59,9 @@ public class AppConfig {
         emf.setPackagesToScan("org.example.library.entity");
         emf.setJpaVendorAdapter(new HibernateJpaVendorAdapter());
 
-        // You can add additional JPA properties here if needed
-        java.util.Properties jpaProperties = new java.util.Properties();
-        jpaProperties.put("hibernate.hbm2ddl.auto", "update");
-        jpaProperties.put("hibernate.dialect", "org.hibernate.dialect.PostgreSQLDialect");
+        Properties jpaProperties = new Properties();
+        jpaProperties.put("hibernate.dialect", hibernateDialect);
+        jpaProperties.put("hibernate.hbm2ddl.auto", hbm2ddlAuto);
         emf.setJpaProperties(jpaProperties);
 
         return emf;
